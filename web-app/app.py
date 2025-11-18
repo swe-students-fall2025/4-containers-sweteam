@@ -39,7 +39,6 @@ def result():
 def fake_nutrition_model(image_path: str) -> dict:
     """
     Temporary fake model.
-    Later, you'll call your ML container instead of this.
     """
     # For now, just return some dummy numbers
     return {
@@ -50,4 +49,4 @@ def fake_nutrition_model(image_path: str) -> dict:
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=6000, debug=True)
+    app.run(host="0.0.0.0", port=6500, debug=True)
