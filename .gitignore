@@ -150,4 +150,3 @@ cython_debug/
 machine-learning-client/data/
 machine-learning-client/models/
 machine-learning-client/.env
-machine-learning-client/Pipfile.lock
