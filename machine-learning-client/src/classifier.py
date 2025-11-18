@@ -1,3 +1,9 @@
+"""Image classification utilities for the Nutribob project.
+
+This module loads the pre-trained Keras model and provides helper functions
+to preprocess drink images and run predictions.
+"""
+
 import os
 import numpy as np
 import tensorflow as tf
@@ -20,10 +26,22 @@ print("[classifier] Model loaded.")
 if not os.path.exists(LABELS_PATH):
     raise FileNotFoundError(f"Labels file not found: {LABELS_PATH}")
 
-with open(LABELS_PATH, "r") as f:
+with open(LABELS_PATH, "r", encoding="utf-8") as f:
     LABELS = [line.strip() for line in f.readlines()]
 
+
 def preprocess_image(image_path: str) -> np.ndarray:
+    """Load and preprocess an image for classification.
+
+    The image is resized, converted to an array, normalized to [0, 1],
+    and expanded with a batch dimension.
+
+    Args:
+        image_path: Path to the image file.
+
+    Returns:
+        A NumPy array of shape (1, height, width, channels) ready for the model.
+    """
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 
@@ -36,6 +54,15 @@ def preprocess_image(image_path: str) -> np.ndarray:
 
 
 def classify_image(image_path: str) -> str:
+    """Run a prediction on the given image and return the predicted label.
+
+    Args:
+        image_path: Path to the image file to classify.
+
+    Returns:
+        The predicted class label as a string. Returns "unknown" if the
+        predicted class id is out of range of the loaded labels.
+    """
     img_array = preprocess_image(image_path)
 
     predictions = model.predict(img_array)
@@ -50,6 +77,5 @@ def classify_image(image_path: str) -> str:
 
 
 if __name__ == "__main__":
-    test_image = os.path.join(BASE_DIR, "data", "train", "classic_milk_tea")
+    # This module is intended to be imported by other code.
     print("[classifier] This module is meant to be imported, not run directly.")
-

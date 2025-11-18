@@ -1,3 +1,12 @@
+"""Training script for the Nutribob image classification model.
+
+This module:
+- Loads training data from data/train using Keras image_dataset_from_directory
+- Builds a MobileNetV2-based classifier
+- Trains the model for a small number of epochs
+- Saves the trained model and the detected class labels into the models/ folder
+"""
+
 import os
 import sys
 import tensorflow as tf
@@ -15,7 +24,14 @@ EPOCHS = 5
 
 
 def load_datasets():
-    """Load training dataset from the data/train directory."""
+    """Load the training dataset from the data/train directory.
+
+    Returns:
+        A tuple (train_ds, val_ds, class_names) where:
+            - train_ds: tf.data.Dataset containing training images and labels.
+            - val_ds: currently None (no separate validation split is used).
+            - class_names: list of class name strings inferred from subfolders.
+    """
     print(f"Looking for training data in: {DATA_DIR}")
 
     if not os.path.exists(DATA_DIR):
@@ -23,7 +39,8 @@ def load_datasets():
         sys.exit(1)
 
     subdirs = [
-        d for d in os.listdir(DATA_DIR)
+        d
+        for d in os.listdir(DATA_DIR)
         if os.path.isdir(os.path.join(DATA_DIR, d))
     ]
     if not subdirs:
@@ -56,8 +73,15 @@ def load_datasets():
     return train_ds, None, class_names
 
 
-def build_model(num_classes: int):
-    """Build a MobileNetV2-based image classification model."""
+def build_model(num_classes: int) -> tf.keras.Model:
+    """Build a MobileNetV2-based image classification model.
+
+    Args:
+        num_classes: Number of output classes.
+
+    Returns:
+        A compiled Keras model ready for training.
+    """
     base_model = tf.keras.applications.MobileNetV2(
         input_shape=IMG_SIZE + (3,),
         include_top=False,
@@ -85,7 +109,7 @@ def build_model(num_classes: int):
     return model
 
 
-def main():
+def main() -> None:
     """Entry point for training the Nutribob model."""
     train_ds, val_ds, class_names = load_datasets()
     num_classes = len(class_names)
