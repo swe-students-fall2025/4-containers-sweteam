@@ -1,0 +1,5 @@
+brown_sugar_milk_tea
+classic_milk_tea
+fruit_tea
+matcha_milk_tea
+taro_milk_tea
