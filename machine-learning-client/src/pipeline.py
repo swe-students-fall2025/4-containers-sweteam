@@ -1,6 +1,6 @@
 import os
 
-from dotenv import load_dotenv  # pylint: disable=import-error
+from dotenv import load_dotenv
 
 from classifier import classify_image
 from recipe_mapper import get_recipe_for_label
