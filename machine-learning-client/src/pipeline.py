@@ -1,32 +1,33 @@
 import os
-from dotenv import load_dotenv
+
+from dotenv import load_dotenv  # pylint: disable=import-error
 
 from classifier import classify_image
 from recipe_mapper import get_recipe_for_label
 from nutrition_api import get_nutrition, NutritionAPIError
-from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def analyze_drink_image(image_path: str) -> dict:
+    """Analyze a drink image and return classification, recipe, and nutrition info."""
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 
     label = classify_image(image_path)
-
     recipe_text = get_recipe_for_label(label)
 
     try:
         nutrition = get_nutrition(recipe_text)
-    except NutritionAPIError as e:
+    except NutritionAPIError as exc:
         return {
             "success": False,
             "label": label,
             "recipe": recipe_text,
-            "error": str(e),
+            "error": str(exc),
         }
 
-    result = {
+    result: dict = {
         "success": True,
         "label": label,
         "recipe": recipe_text,
@@ -45,9 +46,7 @@ def analyze_drink_image(image_path: str) -> dict:
 
 
 if __name__ == "__main__":
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    test_image = os.path.join(
-        BASE_DIR, "data", "train", "classic_milk_tea"
+    print(
+        "This module defines analyze_drink_image(). "
+        "Import it and call analyze_drink_image('path/to/image.jpg') to test."
     )
-    print("Please pass a real image path to analyze_drink_image() in your own test script.")
-

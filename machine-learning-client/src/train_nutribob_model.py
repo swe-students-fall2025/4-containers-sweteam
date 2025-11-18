@@ -1,4 +1,6 @@
 import os
+import sys
+
 import tensorflow as tf
 import sys
 from tensorflow.keras import layers, models
@@ -13,14 +15,19 @@ IMG_SIZE = (224, 224)
 BATCH_SIZE = 16
 EPOCHS = 5
 
+
 def load_datasets():
+    """Load training dataset from the data/train directory."""
     print(f"Looking for training data in: {DATA_DIR}")
 
     if not os.path.exists(DATA_DIR):
         print("ERROR: data/train doesn't exist")
         sys.exit(1)
 
-    subdirs = [d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))]
+    subdirs = [
+        d for d in os.listdir(DATA_DIR)
+        if os.path.isdir(os.path.join(DATA_DIR, d))
+    ]
     if not subdirs:
         print("ERROR: data/train has no subdirectories")
         sys.exit(1)
@@ -33,29 +40,30 @@ def load_datasets():
         label_mode="int",
         image_size=IMG_SIZE,
         batch_size=BATCH_SIZE,
-        shuffle=True
+        shuffle=True,
     )
 
     class_names = train_ds.class_names
     print("Detected classes from dataset:", class_names)
 
     os.makedirs(MODELS_DIR, exist_ok=True)
-    with open(LABELS_PATH, "w") as f:
+    with open(LABELS_PATH, "w", encoding="utf-8") as labels_file:
         for name in class_names:
-            f.write(name + "\n")
+            labels_file.write(name + "\n")
     print(f"Labels saved to {LABELS_PATH}")
 
-    AUTOTUNE = tf.data.AUTOTUNE
-    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    autotune = tf.data.AUTOTUNE
+    train_ds = train_ds.cache().prefetch(buffer_size=autotune)
 
     return train_ds, None, class_names
 
 
 def build_model(num_classes: int):
+    """Build a MobileNetV2-based image classification model."""
     base_model = tf.keras.applications.MobileNetV2(
         input_shape=IMG_SIZE + (3,),
         include_top=False,
-        weights="imagenet"
+        weights="imagenet",
     )
 
     base_model.trainable = False
@@ -72,7 +80,7 @@ def build_model(num_classes: int):
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
         loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"]
+        metrics=["accuracy"],
     )
 
     model.summary()
@@ -80,6 +88,7 @@ def build_model(num_classes: int):
 
 
 def main():
+    """Entry point for training the Nutribob model."""
     train_ds, val_ds, class_names = load_datasets()
     num_classes = len(class_names)
 
@@ -88,8 +97,11 @@ def main():
     history = model.fit(
         train_ds,
         validation_data=val_ds,
-        epochs=EPOCHS
+        epochs=EPOCHS,
     )
+
+    final_acc = history.history.get("accuracy", ["N/A"])[-1]
+    print(f"Training finished. Final training accuracy: {final_acc}")
 
     os.makedirs(MODELS_DIR, exist_ok=True)
     model.save(MODEL_PATH)
