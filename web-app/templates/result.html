@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NutriBob - Result</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>NutriBob Result</h1>
+
+      {% if image_filename %}
+        <div>
+          <p><strong>Scanned Image:</strong></p>
+          <img
+            src="{{ url_for('static', filename='uploads/' ~ image_filename) }}"
+            alt="Milk tea"
+            style="max-width: 300px"
+          />
+        </div>
+      {% endif %}
+
+      <h2>Estimated Nutrition</h2>
+      <ul>
+        <li>Calories: {{ nutrition.calories }} kcal</li>
+        <li>Sugar: {{ nutrition.sugar_grams }} g</li>
+        <li>Fat: {{ nutrition.fat_grams }} g</li>
+      </ul>
+
+      <form action="{{ url_for('index') }}" method="get">
+        <button type="submit">Back</button>
+      </form>
+    </div>
+  </body>
+</html>
