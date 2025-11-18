@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NutriBob</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>NutriBob</h1>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flash-messages">
+            {% for msg in messages %}
+              <li>{{ msg }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <!-- Single form, two ways to choose an image -->
+      <form
+        id="uploadForm"
+        action="{{ url_for('result') }}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <!-- Hidden inputs; they get triggered by the buttons -->
+        <input
+          type="file"
+          id="cameraInput"
+          name="image"
+          accept="image/*"
+          capture="environment"
+          style="display: none"
+        />
+        <input
+          type="file"
+          id="fileInput"
+          name="image"
+          accept="image/*"
+          style="display: none"
+        />
+
+        <button type="button" id="scanButton">Scan with Camera</button>
+        <button type="button" id="chooseButton">Choose from Device</button>
+      </form>
+    </div>
+
+    <script>
+      const scanButton = document.getElementById("scanButton");
+      const chooseButton = document.getElementById("chooseButton");
+      const cameraInput = document.getElementById("cameraInput");
+      const fileInput = document.getElementById("fileInput");
+      const form = document.getElementById("uploadForm");
+
+      scanButton.addEventListener("click", () => {
+        cameraInput.click();
+      });
+
+      chooseButton.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // When user selects a file (either camera or file), auto-submit the form
+      cameraInput.addEventListener("change", () => {
+        if (cameraInput.files.length > 0) {
+          form.submit();
+        }
+      });
+
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+          form.submit();
+        }
+      });
+    </script>
+  </body>
+</html>
