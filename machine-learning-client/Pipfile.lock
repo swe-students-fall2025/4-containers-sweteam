@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ef00a97ce8e5f5375c94bfbbe5dc8c9aa372543117efa192c22f0b1f76cb5dcd"
+            "sha256": "14685994adf483ba9bf38114884dc01c134f2d5578a27cf54df31c3b00b846bf"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -902,7 +902,8 @@
                 "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466",
                 "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
             ],
-            "markers": "sys_platform == 'darwin'",
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==4.15.0"
         },
         "urllib3": {
@@ -1288,14 +1289,6 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==0.13.3"
-        },
-        "typing-extensions": {
-            "hashes": [
-                "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466",
-                "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
-            ],
-            "markers": "sys_platform == 'darwin'",
-            "version": "==4.15.0"
         }
     }
 }

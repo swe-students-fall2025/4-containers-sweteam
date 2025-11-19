@@ -6,12 +6,12 @@ name = "pypi"
 [packages]
 tensorflow = {version = "==2.15.0", markers = "sys_platform != 'darwin'"}
 tensorflow-macos = {version = "==2.15.0", markers = "sys_platform == 'darwin'"}
-
 numpy = "*"
 requests = "*"
 python-dotenv = "*"
 pillow = "*"
 pymongo = "*"
+typing-extensions = "*"
 
 [dev-packages]
 pytest = "*"
@@ -19,7 +19,6 @@ pytest-cov = "*"
 pylint = "*"
 black = "*"
 tomli = "*"
-typing_extensions = "*"
 
 [requires]
 python_version = "3.10"
