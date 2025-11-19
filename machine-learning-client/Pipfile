@@ -5,9 +5,7 @@ name = "pypi"
 
 [packages]
 tensorflow = {version = "==2.15.0", markers = "sys_platform != 'darwin'"}
-tensorflow-macos = {version = "==2.12.0", markers = "sys_platform == 'darwin'"}
-tensorflow-metal = {version = "==1.1.0", markers = "sys_platform == 'darwin'"}
-
+tensorflow-macos = {version = "==2.15.0", markers = "sys_platform == 'darwin'"}
 numpy = "*"
 requests = "*"
 python-dotenv = "*"
