@@ -9,7 +9,6 @@ import io
 from datetime import datetime
 from functools import wraps
 import certifi
-from bson import ObjectId
 
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
@@ -25,7 +24,7 @@ from flask import (
     abort,
 )
 from pymongo.mongo_client import MongoClient
-from bson.binary import Binary
+from bson.binary import Binary, ObjectId
 
 load_dotenv()
 
