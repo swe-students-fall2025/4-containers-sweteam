@@ -1,13 +1,20 @@
 """Image classification utilities for the Nutribob project.
 
 This module loads the pre-trained Keras model and provides helper functions
-to preprocess drink images and run predictions.
+to preprocess drink images and run predictions. When the TensorFlow model
+or weights are unavailable (common on developer machines), the classifier
+falls back to a simple stub prediction so the service stays usable.
 """
 
 import os
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+
+try:
+    import tensorflow as tf
+    from tensorflow.keras.models import load_model
+except ImportError:  # TensorFlow not installed (e.g., CI or lightweight dev env)
+    tf = None
+    load_model = None
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
@@ -16,18 +23,32 @@ LABELS_PATH = os.path.join(MODELS_DIR, "labels.txt")
 
 IMG_SIZE = (224, 224)
 
-if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
+LABELS: list[str] = []
+if os.path.exists(LABELS_PATH):
+    with open(LABELS_PATH, "r", encoding="utf-8") as f:
+        LABELS = [line.strip() for line in f.readlines() if line.strip()]
+if not LABELS:
+    LABELS = ["Milk tea"]
 
-print(f"[classifier] Loading model from {MODEL_PATH} ...")
-model = load_model(MODEL_PATH)
-print("[classifier] Model loaded.")
+model = None
+MODEL_AVAILABLE = False
 
-if not os.path.exists(LABELS_PATH):
-    raise FileNotFoundError(f"Labels file not found: {LABELS_PATH}")
-
-with open(LABELS_PATH, "r", encoding="utf-8") as f:
-    LABELS = [line.strip() for line in f.readlines()]
+if load_model is not None and os.path.exists(MODEL_PATH):
+    try:
+        print(f"[classifier] Loading model from {MODEL_PATH} ...")
+        model = load_model(MODEL_PATH)
+        MODEL_AVAILABLE = True
+        print("[classifier] Model loaded.")
+    except Exception as exc:  # pylint: disable=broad-except
+        print(f"[classifier] Failed to load TensorFlow model: {exc}")
+else:
+    if load_model is None:
+        print("[classifier] TensorFlow not available; using stub classifier.")
+    else:
+        print(
+            f"[classifier] Model file not found at {MODEL_PATH}; "
+            "using stub classifier."
+        )
 
 
 def preprocess_image(image_path: str) -> np.ndarray:
@@ -44,6 +65,9 @@ def preprocess_image(image_path: str) -> np.ndarray:
     """
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
+
+    if not MODEL_AVAILABLE or tf is None:
+        raise RuntimeError("TensorFlow model is not available for preprocessing.")
 
     img = tf.keras.preprocessing.image.load_img(image_path, target_size=IMG_SIZE)
     img_array = tf.keras.preprocessing.image.img_to_array(img)
@@ -63,6 +87,14 @@ def classify_image(image_path: str) -> str:
         The predicted class label as a string. Returns "unknown" if the
         predicted class id is out of range of the loaded labels.
     """
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image not found: {image_path}")
+
+    if not MODEL_AVAILABLE or model is None:
+        # Stub prediction so the ML API can function without heavy model files.
+        print("[classifier] MODEL_AVAILABLE is False; returning stub label.")
+        return LABELS[0]
+
     img_array = preprocess_image(image_path)
 
     predictions = model.predict(img_array)

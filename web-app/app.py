@@ -8,7 +8,9 @@ import os
 import io
 from datetime import datetime
 from functools import wraps
+from typing import Any
 import certifi
+import requests
 
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
@@ -36,6 +38,9 @@ mongo_client: MongoClient | None = None
 mongo_db = None
 
 mongo_uri = os.environ.get("MONGODB_URI")
+ml_service_url = os.environ.get("ML_SERVICE_URL")
+if ml_service_url:
+    ml_service_url = ml_service_url.rstrip("/")
 
 if mongo_uri:
     try:
@@ -60,6 +65,10 @@ oauth.register(
     api_base_url="https://www.googleapis.com/oauth2/v3/",
     client_kwargs={"scope": "openid email profile"},
 )
+
+
+class MLServiceError(Exception):
+    """Raised when the external ML analysis service cannot be used."""
 
 
 def login_required(view):
@@ -95,53 +104,73 @@ def scan():
     """Handle image upload from the scan page and show results."""
     image_file1 = request.files.get("image1")
     image_file2 = request.files.get("image2")
-    # Prefer the second file if the first is empty, but guard against None.
-    if (not image_file1 or image_file1.filename == "") and image_file2:
+    image_file = image_file1
+    if image_file1 is None or image_file1.filename == "":
         image_file = image_file2
-    else:
-        image_file = image_file1
 
-    if not image_file or image_file.filename == "":
+    if image_file is None or image_file.filename == "":
         flash("Please select or scan a milk tea image first.")
         return redirect(url_for("index"))
 
-    uploads_dir = os.path.join(app.root_path, "static", "uploads")
-    os.makedirs(uploads_dir, exist_ok=True)
+    image_bytes = image_file.read()
+    if not image_bytes:
+        flash("Uploaded image is empty. Please try again.")
+        return redirect(url_for("index"))
 
-    image_path = os.path.join(uploads_dir, image_file.filename)
-    image_file.save(image_path)
+    max_size_bytes = 16 * 1024 * 1024  # 16 MB
+    if len(image_bytes) > max_size_bytes:
+        flash("Image too large. Please upload an image under 16MB.")
+        return redirect(url_for("index"))
 
-    nutrition = fake_nutrition_model(image_path)
+    image_filename = image_file.filename or "scan.jpg"
+    image_content_type = image_file.mimetype or "application/octet-stream"
+
+    default_nutrition = fake_nutrition_model(image_bytes)
+    nutrition = default_nutrition
+    analysis_result: dict[str, Any] | None = None
+    if ml_service_url:
+        try:
+            analysis_result = call_ml_service(
+                image_bytes, image_filename, image_content_type
+            )
+            nutrition = merge_nutrition(default_nutrition, analysis_result)
+        except MLServiceError as exc:
+            print(f"ML service request failed: {exc}")
+            flash(
+                "Milk tea model is unavailable right now; showing sample values.",
+                "warning",
+            )
 
     user = session.get("user")
+    scan_doc_id = None
     if mongo_db is not None and user:
         try:
-            with open(image_path, "rb") as f:
-                image_bytes = f.read()
+            drink_name = (
+                (analysis_result or {}).get("label") if analysis_result else None
+            ) or "Milk tea"
+            scan_doc = {
+                "user_id": user.get("id"),
+                "user_email": user.get("email"),
+                "image_filename": image_filename,
+                "image_content_type": image_content_type,
+                "image_data": Binary(image_bytes),
+                "drink_name": drink_name,
+                "nutrition": nutrition,
+                "created_at": datetime.utcnow(),
+            }
+            if analysis_result is not None:
+                scan_doc["analysis_result"] = analysis_result
 
-            max_size_bytes = 16 * 1024 * 1024  # 16 MB
-            if len(image_bytes) > max_size_bytes:
-                flash("Image too large. Please upload an image under 16MB.")
-                return redirect(url_for("index"))
-
-            mongo_db.scans.insert_one(
-                {
-                    "user_id": user.get("id"),
-                    "user_email": user.get("email"),
-                    "image_filename": image_file.filename,
-                    "image_content_type": image_file.mimetype,
-                    "image_data": Binary(image_bytes),
-                    "nutrition": nutrition,
-                    "created_at": datetime.utcnow(),
-                }
-            )
+            insert_result = mongo_db.scans.insert_one(scan_doc)
+            scan_doc_id = str(insert_result.inserted_id)
         except Exception as exc:  # pylint: disable=broad-except
             print(f"Mongo insert failed: {exc}")
 
     return render_template(
         "result.html",
         nutrition=nutrition,
-        image_filename=image_file.filename,
+        scan_id=scan_doc_id,
+        ml_result=analysis_result,
         user=user,
     )
 
@@ -258,18 +287,80 @@ def logout():
     return redirect(url_for("index"))
 
 
-def fake_nutrition_model(image_path: str) -> dict:
+def call_ml_service(
+    image_bytes: bytes, filename: str, content_type: str
+) -> dict[str, Any]:
+    """Send an image to the ML service and return its JSON payload."""
+    if not ml_service_url:
+        raise MLServiceError("ML_SERVICE_URL is not configured.")
+
+    endpoint = f"{ml_service_url}/analyze"
+    files = {"image": (filename, image_bytes, content_type)}
+    try:
+        response = requests.post(endpoint, files=files, timeout=30)
+    except requests.RequestException as exc:
+        raise MLServiceError(f"Request to ML service failed: {exc}") from exc
+
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise MLServiceError("ML service returned invalid JSON.") from exc
+
+    if response.status_code >= 400:
+        error_message = (
+            payload.get("error") if isinstance(payload, dict) else response.text
+        )
+        raise MLServiceError(f"ML service error: {error_message}")
+    return payload
+
+
+def merge_nutrition(
+    fallback: dict[str, Any], analysis_result: dict[str, Any] | None
+) -> dict[str, Any]:
+    """Combine fallback nutrition values with analysis results when available."""
+    merged = dict(fallback)
+    if not analysis_result or not analysis_result.get("success"):
+        return merged
+
+    summary = analysis_result.get("summary") or {}
+    if not isinstance(summary, dict):
+        summary = {}
+    calories = summary.get("total_calories")
+    if calories is not None:
+        merged["calories"] = round(calories)
+
+    raw = analysis_result.get("nutrition_raw") or {}
+    if not isinstance(raw, dict):
+        raw = {}
+    items = raw.get("items") or []
+    try:
+        iterator = list(items)
+    except TypeError:
+        iterator = []
+
+    if iterator:
+        sugar_total = sum(item.get("sugar_g", 0) for item in iterator)
+        fat_total = sum(item.get("fat_total_g", 0) for item in iterator)
+        if sugar_total is not None:
+            merged["sugar_grams"] = round(sugar_total, 1)
+        if fat_total is not None:
+            merged["fat_grams"] = round(fat_total, 1)
+
+    return merged
+
+
+def fake_nutrition_model(image_bytes: bytes) -> dict:
     """
     Temporary fake model.
 
     Args:
-        image_path: Path to the saved drink image (currently unused).
+        image_bytes: Raw bytes of the uploaded drink image (currently unused).
 
     Returns:
         A dictionary with dummy nutrition information.
     """
     # Mark the argument as intentionally unused for now
-    _ = image_path
+    _ = image_bytes
 
     return {
         "calories": 380,

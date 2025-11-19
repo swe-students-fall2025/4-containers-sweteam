@@ -25,6 +25,7 @@ def fixture_client(monkeypatch, tmp_path):
     # Disable real Mongo and OAuth during tests
     monkeypatch.setattr("app.mongo_db", None, raising=False)
     monkeypatch.setattr("app.oauth", type("_O", (), {"google": None})(), raising=False)
+    monkeypatch.setattr("app.ml_service_url", None, raising=False)
 
     # Use a temporary uploads directory
     uploads_dir = tmp_path / "uploads"
@@ -85,7 +86,7 @@ def test_scan_with_file_uses_fake_model(client, monkeypatch, tmp_path):
     dummy_image_path = tmp_path / "test.jpg"
     dummy_image_path.write_bytes(b"fake image bytes")
 
-    def fake_model(_path):
+    def fake_model(_bytes):
         return {"calories": 123, "sugar_grams": 10, "fat_grams": 2}
 
     monkeypatch.setattr("app.fake_nutrition_model", fake_model)
@@ -100,7 +101,7 @@ def test_scan_with_file_uses_fake_model(client, monkeypatch, tmp_path):
 
 def test_fake_nutrition_model_returns_expected_keys():
     """fake_nutrition_model should return calorie, sugar, and fat keys."""
-    result = fake_nutrition_model("/does/not/matter.jpg")
+    result = fake_nutrition_model(b"test-bytes")
     assert set(result.keys()) == {"calories", "sugar_grams", "fat_grams"}
 
 
@@ -140,7 +141,7 @@ def test_result_route_delegates_to_scan(client, monkeypatch, tmp_path):
     dummy_image_path = tmp_path / "legacy.jpg"
     dummy_image_path.write_bytes(b"fake image bytes")
 
-    def fake_model(_path):
+    def fake_model(_bytes):
         return {"calories": 50, "sugar_grams": 5, "fat_grams": 1}
 
     monkeypatch.setattr("app.fake_nutrition_model", fake_model)

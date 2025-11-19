@@ -65,13 +65,13 @@
       </div>
 
       <div class="grid gap-6 md:grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)]">
-        {% if image_filename %}
+        {% if scan_id %}
         <div class="flex flex-col items-center md:items-start">
           <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">
             Scanned Image
           </p>
           <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-            <img src="{{ url_for('static', filename='uploads/' ~ image_filename) }}" alt="Milk tea"
+            <img src="{{ url_for('image', scan_id=scan_id) }}" alt="Milk tea"
               class="max-h-64 w-full object-cover" />
           </div>
         </div>
@@ -128,6 +128,26 @@
           </form>
         </div>
       </div>
+
+      {% if ml_result %}
+      <div class="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">Model insights</p>
+        {% if ml_result.label %}
+        <p class="text-sm text-slate-800">
+          Predicted drink:
+          <span class="font-semibold text-slate-900">{{ ml_result.label }}</span>
+        </p>
+        {% endif %}
+        {% if ml_result.recipe %}
+        <p class="text-sm text-slate-700 mt-2">
+          Recipe hint: {{ ml_result.recipe }}
+        </p>
+        {% endif %}
+        {% if not ml_result.success and ml_result.error %}
+        <p class="text-xs text-rose-600 mt-2">Model note: {{ ml_result.error }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
   </main>
 </body>
