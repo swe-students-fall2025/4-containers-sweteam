@@ -24,7 +24,8 @@ from flask import (
     abort,
 )
 from pymongo.mongo_client import MongoClient
-from bson.binary import Binary, ObjectId
+from bson.binary import Binary
+from bson import ObjectId
 
 load_dotenv()
 
