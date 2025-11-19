@@ -334,7 +334,7 @@ def merge_nutrition(
         raw = {}
     items = raw.get("items") or []
     try:
-        iterator = list(items)
+        iterator = [item for item in list(items) if isinstance(item, dict)]
     except TypeError:
         iterator = []
 
