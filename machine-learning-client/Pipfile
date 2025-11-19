@@ -12,6 +12,7 @@ python-dotenv = "*"
 pillow = "*"
 pymongo = "*"
 typing-extensions = "*"
+packaging = "*"
 
 [dev-packages]
 pytest = "*"
@@ -19,7 +20,6 @@ pytest-cov = "*"
 pylint = "*"
 black = "*"
 tomli = "*"
-packaging = "*"
 
 [requires]
 python_version = "3.10"

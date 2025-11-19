@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a03c07d3383d0549c9ef89b33d16a14fc8c5d964632226aa35b994f0b5148adc"
+            "sha256": "f2362c3b902ee17f3c3167480200e6193543df4e30d07b92679bd3ba153e22e6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -551,7 +551,8 @@
                 "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
                 "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"
             ],
-            "markers": "sys_platform == 'darwin'",
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==25.0"
         },
         "pillow": {
@@ -1163,7 +1164,8 @@
                 "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
                 "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"
             ],
-            "markers": "sys_platform == 'darwin'",
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==25.0"
         },
         "pathspec": {
