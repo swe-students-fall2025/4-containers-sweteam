@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: mongo:6
+    container_name: nutribob-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
+    volumes:
+      - mongo-data:/data/db
+
+  ml-client:
+    container_name: ml-client
+    build: ./machine-learning-client
+    environment:
+      FOOD_API_URL: ${FOOD_API_URL}
+      FOOD_API_KEY: ${FOOD_API_KEY}
+      MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASS}@db:27017/${MONGO_DB_NAME}?authSource=admin
+    depends_on:
+      - db
+
+  web-app:
+    container_name: web-app
+    build: ./web-app
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASS}@db:27017/${MONGO_DB_NAME}?authSource=admin
+    depends_on:
+      - db
+
+volumes:
+  mongo-data:
+    driver: local
