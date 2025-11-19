@@ -94,7 +94,7 @@ def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
 def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
     """Function used in training the Nutribob model."""
     counts = []
-    for idx, name in enumerate(class_names):
+    for _, name in enumerate(class_names):
         folder = os.path.join(DATA_DIR, name)
         num_files = len(
             [
