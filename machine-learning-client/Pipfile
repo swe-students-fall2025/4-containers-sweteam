@@ -19,6 +19,7 @@ pytest-cov = "*"
 pylint = "*"
 black = "*"
 tomli = "*"
+packaging = "*"
 
 [requires]
 python_version = "3.10"
