@@ -5,7 +5,10 @@ uploading images to be analyzed by the (currently fake) nutrition model.
 """
 
 import os
+import io
+from datetime import datetime
 from functools import wraps
+import certifi
 
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
@@ -17,12 +20,36 @@ from flask import (
     request,
     session,
     url_for,
+    send_file,
+    abort,
 )
+from pymongo.mongo_client import MongoClient
+from bson.binary import Binary
+from bson import ObjectId
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-me-later")
+
+mongo_client: MongoClient | None = None
+mongo_db = None
+
+mongo_uri = os.environ.get("MONGODB_URI")
+
+if mongo_uri:
+    try:
+        mongo_client = MongoClient(
+            mongo_uri,
+            serverSelectionTimeoutMS=5000,
+            tlsCAFile=certifi.where(),
+        )
+        mongo_db = mongo_client["nutribob"]
+        print("Connected to MongoDB successfully.")
+    except Exception as exc:  # pylint: disable=broad-except
+        print(f"MongoDB connection failed: {exc}")
+        mongo_client = None
+        mongo_db = None
 
 oauth = OAuth(app)
 oauth.register(
@@ -62,53 +89,127 @@ def index():
     return render_template("index.html", user=session.get("user"))
 
 
-@app.route("/history", methods=["GET"])
+@app.route("/scan", methods=["POST"])
 @login_required
-def history():
-    """Show a placeholder list of past scans for the logged-in user.
+def scan():
+    """Handle image upload from the scan page and show results."""
+    image_file1 = request.files.get("image1")
+    image_file2 = request.files.get("image2")
+    image_file = image_file2 if image_file1.filename == "" else image_file1
 
-    In a future iteration this will pull real data from persistent
-    storage or the ML client instead of using hard-coded examples.
-    """
-    fake_scans = [
-        {"drink": "Brown Sugar Boba", "calories": 380},
-        {"drink": "Matcha Latte", "calories": 290},
-        {"drink": "Taro Milk Tea", "calories": 340},
-    ]
-    return render_template(
-        "history.html",
-        user=session.get("user"),
-        scans=fake_scans,
-    )
-
-
-@app.route("/result", methods=["POST"])
-@login_required
-def result():
-    """Handle image upload and display fake nutrition results."""
-    image_file = request.files.get("image")
-
-    if not image_file or image_file.filename == "":
+    if not image_file1 and not image_file2:
         flash("Please select or scan a milk tea image first.")
         return redirect(url_for("index"))
 
-    # Save the uploaded image (optional but useful if we want to show it later)
     uploads_dir = os.path.join(app.root_path, "static", "uploads")
     os.makedirs(uploads_dir, exist_ok=True)
 
     image_path = os.path.join(uploads_dir, image_file.filename)
     image_file.save(image_path)
 
-    # Placeholder for future real ML model / ML client call.
     nutrition = fake_nutrition_model(image_path)
 
-    # Pass both nutrition info and image filename to template
+    user = session.get("user")
+    if mongo_db is not None and user:
+        try:
+            with open(image_path, "rb") as f:
+                image_bytes = f.read()
+
+            max_size_bytes = 16 * 1024 * 1024  # 16 MB
+            if len(image_bytes) > max_size_bytes:
+                flash("Image too large. Please upload an image under 16MB.")
+                return redirect(url_for("index"))
+
+            mongo_db.scans.insert_one(
+                {
+                    "user_id": user.get("id"),
+                    "user_email": user.get("email"),
+                    "image_filename": image_file.filename,
+                    "image_content_type": image_file.mimetype,
+                    "image_data": Binary(image_bytes),
+                    "nutrition": nutrition,
+                    "created_at": datetime.utcnow(),
+                }
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            print(f"Mongo insert failed: {exc}")
+
     return render_template(
         "result.html",
         nutrition=nutrition,
         image_filename=image_file.filename,
-        user=session.get("user"),
+        user=user,
     )
+
+
+@app.route("/history", methods=["GET"])
+@login_required
+def history():
+    """Show a list of past scans for the logged-in user.
+
+    If the database is unavailable, this falls back to a helpful message
+    instead of failing.
+    """
+    user = session.get("user")
+    scans = []
+
+    if mongo_db is not None and user:
+        try:
+            cursor = (
+                mongo_db.scans.find({"user_id": user.get("id")})
+                .sort("created_at", -1)
+                .limit(50)
+            )
+            for doc in cursor:
+                scans.append(
+                    {
+                        "id": str(doc.get("_id")),
+                        "drink": doc.get("drink_name", "Milk tea"),
+                        "calories": doc.get("nutrition", {}).get("calories"),
+                    }
+                )
+        except Exception:  # pylint: disable=broad-except
+            scans = []
+    return render_template(
+        "history.html",
+        user=user,
+        scans=scans,
+    )
+
+
+@app.route("/image/<scan_id>")
+@login_required
+def image(scan_id):
+    """Serve the stored image for a given scan document."""
+
+    if mongo_db is None:
+        abort(503)
+
+    user = session.get("user")
+    try:
+        doc = mongo_db.scans.find_one(
+            {"_id": ObjectId(scan_id), "user_id": user.get("id")}
+        )
+    except Exception:  # pylint: disable=broad-except
+        doc = None
+
+    if not doc or "image_data" not in doc:
+        abort(404)
+
+    return send_file(
+        io.BytesIO(doc["image_data"]),
+        mimetype=doc.get("image_content_type", "image/jpeg"),
+        download_name=doc.get("image_filename", "scan.jpg"),
+    )
+
+
+@app.route("/result", methods=["POST"])
+@login_required
+def result():
+    """Redirect legacy /result posts to the /scan handler."""
+    # Some clients/templates may still POST directly to /result.
+    # Delegate to the unified scan handler to avoid duplication.
+    return scan()
 
 
 @app.route("/login")
