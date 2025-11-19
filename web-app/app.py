@@ -9,6 +9,7 @@ import io
 from datetime import datetime
 from functools import wraps
 import certifi
+from bson import ObjectId
 
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
@@ -180,7 +181,6 @@ def history():
 @login_required
 def image(scan_id):
     """Serve the stored image for a given scan document."""
-    from bson import ObjectId
 
     if mongo_db is None:
         abort(503)
