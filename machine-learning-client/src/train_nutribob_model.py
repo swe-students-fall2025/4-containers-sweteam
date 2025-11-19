@@ -39,9 +39,7 @@ def load_datasets():
         sys.exit(1)
 
     subdirs = [
-        d
-        for d in os.listdir(DATA_DIR)
-        if os.path.isdir(os.path.join(DATA_DIR, d))
+        d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))
     ]
     if not subdirs:
         print("ERROR: data/train has no subdirectories")

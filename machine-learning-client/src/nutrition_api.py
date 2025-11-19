@@ -13,6 +13,7 @@ load_dotenv()
 
 class NutritionAPIError(Exception):
     """Custom exception type for nutrition API failures."""
+
     # No extra implementation needed; used for clearer error handling.
 
 
