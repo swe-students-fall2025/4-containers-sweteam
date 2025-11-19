@@ -64,13 +64,16 @@
       {% if scans %}
       <ul class="divide-y divide-slate-100">
         {% for scan in scans %}
-        <li class="py-3 flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-slate-900">{{ scan.drink }}</p>
-            <p class="text-xs text-slate-500">Estimated calories: {{ scan.calories }} kcal</p>
+        <li class="py-4 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
+              <img src="{{ url_for('image', scan_id=scan.id) }}" alt="Scan image" class="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p class="text-sm font-medium text-slate-900">{{ scan.drink }}</p>
+              <p class="text-xs text-slate-500">Estimated calories: {{ scan.calories }} kcal</p>
+            </div>
           </div>
-          <span
-            class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">Demo</span>
         </li>
         {% endfor %}
       </ul>
