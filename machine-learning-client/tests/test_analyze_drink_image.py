@@ -13,8 +13,8 @@ SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from pipeline import analyze_drink_image  # pylint: disable=wrong-import-position,import-error
-from nutrition_api import (  # pylint: disable=wrong-import-position,import-error
+from pipeline import analyze_drink_image  
+from nutrition_api import (  
     NutritionAPIError,
 )
 
