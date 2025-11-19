@@ -1,38 +1,135 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>NutriBob - Result</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <h1>NutriBob Result</h1>
 
-      {% if image_filename %}
-        <div>
-          <p><strong>Scanned Image:</strong></p>
-          <img
-            src="{{ url_for('static', filename='uploads/' ~ image_filename) }}"
-            alt="Milk tea"
-            style="max-width: 300px"
-          />
+<head>
+  <meta charset="utf-8" />
+  <title>NutriBob · Result</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+
+<body class="min-h-screen bg-slate-50">
+  <!-- Top navigation bar -->
+  <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-6">
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2">
+          <span
+            class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-slate-900 text-sm font-bold">N</span>
+          <span class="text-base font-semibold text-slate-900 tracking-tight">NutriBob</span>
+        </a>
+
+        {% if user %}
+        <nav class="hidden sm:flex items-center gap-1 text-sm font-medium">
+          <a href="{{ url_for('index') }}"
+            class="px-3 py-2 rounded-md {% if request.endpoint == 'index' %}text-slate-900 bg-slate-100{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+            Upload
+          </a>
+          <a href="{{ url_for('history') }}"
+            class="px-3 py-2 rounded-md {% if request.endpoint == 'history' %}text-slate-900 bg-slate-100{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+            Past scans
+          </a>
+        </nav>
+        {% endif %}
+      </div>
+
+      {% if user %}
+      <div class="flex items-center gap-3">
+        {% if user.picture %}
+        <img src="{{ user.picture }}" alt="Avatar" class="w-8 h-8 rounded-full border border-slate-200" />
+        {% endif %}
+        <div class="text-right">
+          <p class="text-sm font-medium text-slate-900 leading-tight">
+            {{ user.name or user.email }}
+          </p>
+          <form action="{{ url_for('logout') }}" method="get">
+            <button type="submit" class="text-xs text-slate-500 hover:text-amber-600">
+              Log out
+            </button>
+          </form>
         </div>
+      </div>
       {% endif %}
-
-      <h2>Estimated Nutrition</h2>
-      <ul>
-        <li>Calories: {{ nutrition.calories }} kcal</li>
-        <li>Sugar: {{ nutrition.sugar_grams }} g</li>
-        <li>Fat: {{ nutrition.fat_grams }} g</li>
-      </ul>
-
-      <form action="{{ url_for('index') }}" method="get">
-        <button type="submit">Back</button>
-      </form>
     </div>
-  </body>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-semibold text-slate-900">Scan result</h1>
+          <p class="text-sm text-slate-600 mt-1">
+            Heres what we found from your milk tea.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)]">
+        {% if image_filename %}
+        <div class="flex flex-col items-center md:items-start">
+          <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">
+            Scanned Image
+          </p>
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <img src="{{ url_for('static', filename='uploads/' ~ image_filename) }}" alt="Milk tea"
+              class="max-h-64 w-full object-cover" />
+          </div>
+        </div>
+        {% endif %}
+
+        <div>
+          <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">
+            Estimated Nutrition
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-center">
+              <p class="text-[11px] uppercase tracking-wide text-amber-800">
+                Calories
+              </p>
+              <p class="mt-1 text-xl font-semibold text-amber-900">
+                {{ nutrition.calories }}
+                <span class="text-xs font-normal text-amber-700">
+                  kcal
+                </span>
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-3 text-center">
+              <p class="text-[11px] uppercase tracking-wide text-sky-800">
+                Sugar
+              </p>
+              <p class="mt-1 text-xl font-semibold text-sky-900">
+                {{ nutrition.sugar_grams }}
+                <span class="text-xs font-normal text-sky-700">g</span>
+              </p>
+            </div>
+
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-center">
+              <p class="text-[11px] uppercase tracking-wide text-emerald-800">
+                Fat
+              </p>
+              <p class="mt-1 text-xl font-semibold text-emerald-900">
+                {{ nutrition.fat_grams }}
+                <span class="text-xs font-normal text-emerald-700">g</span>
+              </p>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-500 mb-4">
+            These values are estimates from a prototype model and should not
+            be used as medical or dietary advice.
+          </p>
+
+          <form action="{{ url_for('index') }}" method="get">
+            <button type="submit"
+              class="inline-flex items-center justify-center rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+              Scan another drink
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
 </html>

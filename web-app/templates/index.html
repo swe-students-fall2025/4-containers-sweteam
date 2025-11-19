@@ -1,83 +1,137 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>NutriBob</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <h1>NutriBob</h1>
+
+<head>
+  <meta charset="utf-8" />
+  <title>NutriBob · Upload</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50">
+  <!-- Top navigation bar -->
+  <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-6">
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2">
+          <span
+            class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-slate-900 text-sm font-bold">N</span>
+          <span class="text-base font-semibold text-slate-900 tracking-tight">NutriBob</span>
+        </a>
+
+        {% if user %}
+        <nav class="hidden sm:flex items-center gap-1 text-sm font-medium">
+          <a href="{{ url_for('index') }}"
+            class="px-3 py-2 rounded-md {% if request.endpoint == 'index' %}text-slate-900 bg-slate-100{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+            Upload
+          </a>
+          <a href="{{ url_for('history') }}"
+            class="px-3 py-2 rounded-md {% if request.endpoint == 'history' %}text-slate-900 bg-slate-100{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+            Past scans
+          </a>
+        </nav>
+        {% endif %}
+      </div>
+
+      {% if user %}
+      <div class="flex items-center gap-3">
+        {% if user.picture %}
+        <img src="{{ user.picture }}" alt="Avatar" class="w-8 h-8 rounded-full border border-slate-200" />
+        {% endif %}
+        <div class="text-right">
+          <p class="text-sm font-medium text-slate-900 leading-tight">
+            {{ user.name or user.email }}
+          </p>
+          <form action="{{ url_for('logout') }}" method="get">
+            <button type="submit" class="text-xs text-slate-500 hover:text-amber-600">
+              Log out
+            </button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ url_for('login') }}"
+        class="inline-flex items-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800">
+        Sign in
+      </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <div class="mb-4">
+        <h1 class="text-xl font-semibold text-slate-900">Upload or Scan a Milk Tea</h1>
+        <p class="mt-1 text-sm text-slate-600">
+          Use your camera or choose a photo from your device. NutriBob will estimate calories, sugar, and fat.
+        </p>
+      </div>
 
       {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <ul class="flash-messages">
-            {% for msg in messages %}
-              <li>{{ msg }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
+      {% if messages %}
+      <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+        <ul class="space-y-1 text-sm text-amber-800">
+          {% for msg in messages %}
+          <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
       {% endwith %}
 
-      <!-- Single form, two ways to choose an image -->
-      <form
-        id="uploadForm"
-        action="{{ url_for('result') }}"
-        method="post"
-        enctype="multipart/form-data"
-      >
-        <!-- Hidden inputs; they get triggered by the buttons -->
-        <input
-          type="file"
-          id="cameraInput"
-          name="image"
-          accept="image/*"
-          capture="environment"
-          style="display: none"
-        />
-        <input
-          type="file"
-          id="fileInput"
-          name="image"
-          accept="image/*"
-          style="display: none"
-        />
+      <form id="uploadForm" action="{{ url_for('result') }}" method="post" enctype="multipart/form-data"
+        class="space-y-4 text-center">
+        <input type="file" id="cameraInput" name="image" accept="image/*" capture="environment" class="hidden" />
+        <input type="file" id="fileInput" name="image" accept="image/*" class="hidden" />
 
-        <button type="button" id="scanButton">Scan with Camera</button>
-        <button type="button" id="chooseButton">Choose from Device</button>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <button type="button" id="scanButton"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+            <span>Scan with Camera</span>
+          </button>
+
+          <button type="button" id="chooseButton"
+            class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+            <span>Choose from Device</span>
+          </button>
+        </div>
+
+        <p class="text-[11px] text-slate-500">
+          By continuing you agree that NutriBob temporarily stores your
+          photo so the ML model can analyze it.
+        </p>
       </form>
     </div>
+  </main>
 
-    <script>
-      const scanButton = document.getElementById("scanButton");
-      const chooseButton = document.getElementById("chooseButton");
-      const cameraInput = document.getElementById("cameraInput");
-      const fileInput = document.getElementById("fileInput");
-      const form = document.getElementById("uploadForm");
+  <script>
+    const scanButton = document.getElementById("scanButton");
+    const chooseButton = document.getElementById("chooseButton");
+    const cameraInput = document.getElementById("cameraInput");
+    const fileInput = document.getElementById("fileInput");
+    const form = document.getElementById("uploadForm");
 
-      scanButton.addEventListener("click", () => {
-        cameraInput.click();
-      });
+    scanButton.addEventListener("click", () => {
+      cameraInput.click();
+    });
 
-      chooseButton.addEventListener("click", () => {
-        fileInput.click();
-      });
+    chooseButton.addEventListener("click", () => {
+      fileInput.click();
+    });
 
-      // When user selects a file (either camera or file), auto-submit the form
-      cameraInput.addEventListener("change", () => {
-        if (cameraInput.files.length > 0) {
-          form.submit();
-        }
-      });
+    cameraInput.addEventListener("change", () => {
+      if (cameraInput.files.length > 0) {
+        form.submit();
+      }
+    });
 
-      fileInput.addEventListener("change", () => {
-        if (fileInput.files.length > 0) {
-          form.submit();
-        }
-      });
-    </script>
-  </body>
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length > 0) {
+        form.submit();
+      }
+    });
+  </script>
+</body>
+
 </html>

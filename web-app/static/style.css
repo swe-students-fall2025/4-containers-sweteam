@@ -1,37 +1,8 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #fafafa;
+  -webkit-font-smoothing: antialiased;
 }
 
-.container {
-  max-width: 400px;
-  margin: 3rem auto;
-  padding: 2rem;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  text-align: center;
-}
-
-h1 {
-  margin-bottom: 1.5rem;
-}
-
-button {
-  margin: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-.flash-messages {
-  list-style: none;
-  padding: 0;
-  color: red;
-  margin-bottom: 1rem;
+img {
+  max-width: 100%;
+  display: block;
 }

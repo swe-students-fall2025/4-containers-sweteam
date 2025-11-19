@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>NutriBob · Past scans</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50">
+  <!-- Top navigation bar -->
+  <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-6">
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2">
+          <span
+            class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-slate-900 text-sm font-bold">N</span>
+          <span class="text-base font-semibold text-slate-900 tracking-tight">NutriBob</span>
+        </a>
+
+        {% if user %}
+        <nav class="hidden sm:flex items-center gap-1 text-sm font-medium">
+          <a href="{{ url_for('index') }}"
+            class="px-3 py-2 rounded-md {% if request.endpoint == 'index' %}text-slate-900 bg-slate-100{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+            Upload
+          </a>
+          <a href="{{ url_for('history') }}"
+            class="px-3 py-2 rounded-md {% if request.endpoint == 'history' %}text-slate-900 bg-slate-100{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+            Past scans
+          </a>
+        </nav>
+        {% endif %}
+      </div>
+
+      {% if user %}
+      <div class="flex items-center gap-3">
+        {% if user.picture %}
+        <img src="{{ user.picture }}" alt="Avatar" class="w-8 h-8 rounded-full border border-slate-200" />
+        {% endif %}
+        <div class="text-right">
+          <p class="text-sm font-medium text-slate-900 leading-tight">
+            {{ user.name or user.email }}
+          </p>
+          <form action="{{ url_for('logout') }}" method="get">
+            <button type="submit" class="text-xs text-slate-500 hover:text-amber-600">
+              Log out
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <div class="mb-4">
+        <h1 class="text-xl font-semibold text-slate-900">Past scans</h1>
+        <p class="mt-1 text-sm text-slate-600">
+          A quick look at some of your recent milk tea scans.
+        </p>
+      </div>
+
+      {% if scans %}
+      <ul class="divide-y divide-slate-100">
+        {% for scan in scans %}
+        <li class="py-3 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-900">{{ scan.drink }}</p>
+            <p class="text-xs text-slate-500">Estimated calories: {{ scan.calories }} kcal</p>
+          </div>
+          <span
+            class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">Demo</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-sm text-slate-600">
+        You don't have any scans yet. Try uploading a drink first.
+      </p>
+      {% endif %}
+    </div>
+  </main>
+</body>
+
+</html>
