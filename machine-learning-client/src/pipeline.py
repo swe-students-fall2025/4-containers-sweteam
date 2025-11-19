@@ -1,3 +1,11 @@
+"""End-to-end image analysis pipeline for the Nutribob project.
+
+This module defines analyze_drink_image(), which performs:
+1. Image classification using the ML model.
+2. Recipe lookup based on predicted label.
+3. Nutrition API enrichment to fetch calorie estimates.
+"""
+
 import os
 from dotenv import load_dotenv
 from classifier import classify_image
@@ -8,6 +16,20 @@ load_dotenv()
 
 
 def analyze_drink_image(image_path: str) -> dict:
+    """Analyze a drink image and return label, recipe, and nutrition data.
+
+    Args:
+        image_path: Path to the drink image.
+
+    Returns:
+        A dictionary containing:
+            - success (bool)
+            - label (str)
+            - recipe (str)
+            - nutrition_raw (dict, optional)
+            - summary (dict, optional)
+            - error (str, optional)
+    """
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 
