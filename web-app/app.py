@@ -187,7 +187,9 @@ def image(scan_id):
 
     user = session.get("user")
     try:
-        doc = mongo_db.scans.find_one({"_id": ObjectId(scan_id), "user_id": user.get("id")})
+        doc = mongo_db.scans.find_one(
+            {"_id": ObjectId(scan_id), "user_id": user.get("id")}
+        )
     except Exception:  # pylint: disable=broad-except
         doc = None
 
