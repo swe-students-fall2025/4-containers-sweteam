@@ -1,3 +1,9 @@
+"""Flask web application for NutriBob milk tea nutrition scanning.
+
+This module sets up the web UI, Google SSO authentication, and routes for
+uploading images to be analyzed by the (currently fake) nutrition model.
+"""
+
 import os
 from functools import wraps
 
@@ -30,6 +36,8 @@ oauth.register(
 
 
 def login_required(view):
+    """Decorator that redirects anonymous users to the login page."""
+
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if "user" not in session:
@@ -57,8 +65,11 @@ def index():
 @app.route("/history", methods=["GET"])
 @login_required
 def history():
-    """Show a placeholder list of past scans for the logged-in user."""
-    # TODO: Replace with real data from database / ML client.
+    """Show a placeholder list of past scans for the logged-in user.
+
+    In a future iteration this will pull real data from persistent
+    storage or the ML client instead of using hard-coded examples.
+    """
     fake_scans = [
         {"drink": "Brown Sugar Boba", "calories": 380},
         {"drink": "Matcha Latte", "calories": 290},
