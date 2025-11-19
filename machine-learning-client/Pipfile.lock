@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "79c2c79c07dc6229324abe27f94dd934126200d07e2e7b0fed6f76cd84433576"
+            "sha256": "ef00a97ce8e5f5375c94bfbbe5dc8c9aa372543117efa192c22f0b1f76cb5dcd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1288,6 +1288,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==0.13.3"
+        },
+        "typing-extensions": {
+            "hashes": [
+                "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466",
+                "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
+            ],
+            "markers": "sys_platform == 'darwin'",
+            "version": "==4.15.0"
         }
     }
 }
