@@ -1,3 +1,5 @@
+"""Core modules for the Nutribob machine learning client."""
+
 import os
 from pathlib import Path
 from typing import List
@@ -23,6 +25,7 @@ def _load_labels() -> List[str]:
 
 
 def _ensure_model_loaded():
+    # pylint: disable=global-statement
     global _MODEL, _LABELS
     if _MODEL is None:
         if not MODEL_PATH.exists():
@@ -45,6 +48,7 @@ def _preprocess_image(image_path: str) -> np.ndarray:
 
 
 def classify_image(image_path: str) -> str:
+    """Classify the drink in the given image and return its label."""
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 

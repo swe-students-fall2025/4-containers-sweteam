@@ -1,3 +1,5 @@
+"""Training script for the Nutribob image classification model."""
+
 import os
 import sys
 from typing import List, Tuple, Dict
@@ -19,6 +21,7 @@ SEED = 42
 AUTOTUNE = tf.data.AUTOTUNE
 
 def _check_data_dir() -> List[str]:
+    """Function used in training the Nutribob model."""
     print(f"Looking for training data in: {DATA_DIR}")
 
     if not os.path.exists(DATA_DIR):
@@ -40,6 +43,7 @@ def _check_data_dir() -> List[str]:
     return subdirs
 
 def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
+    """Function used in training the Nutribob model."""
     _check_data_dir()
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
@@ -76,6 +80,7 @@ def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
     print(f"Labels saved to {LABELS_PATH}")
 
     def prepare(ds, training: bool) -> tf.data.Dataset:
+        """Function used in training the Nutribob model."""
         if training:
             ds = ds.shuffle(buffer_size=1000, seed=SEED)
         return ds.prefetch(buffer_size=AUTOTUNE)
@@ -87,6 +92,7 @@ def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
 
 
 def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
+    """Function used in training the Nutribob model."""
     counts = []
     for idx, name in enumerate(class_names):
         folder = os.path.join(DATA_DIR, name)
@@ -115,6 +121,7 @@ def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
     return class_weights
 
 def build_model(num_classes: int) -> tf.keras.Model:
+    """Function used in training the Nutribob model."""
     base_model = tf.keras.applications.MobileNetV2(
         input_shape=IMG_SIZE + (3,),
         include_top=False,

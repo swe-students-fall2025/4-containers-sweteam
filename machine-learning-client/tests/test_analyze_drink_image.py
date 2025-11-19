@@ -1,6 +1,4 @@
-"""
-Tests for analyze_drink_image() defined in src/pipeline.py
-"""
+"""Tests for analyze_drink_image() defined in src/pipeline.py"""
 
 import os
 import sys
@@ -8,13 +6,13 @@ from pathlib import Path
 
 import pytest
 
+from pipeline import analyze_drink_image
+from nutrition_api import NutritionAPIError
+
 ROOT_DIR = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
-
-from pipeline import analyze_drink_image
-from nutrition_api import NutritionAPIError
 
 
 def test_missing_image_raises_file_not_found(tmp_path):

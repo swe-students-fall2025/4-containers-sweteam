@@ -1,3 +1,5 @@
+"""Client for the external nutrition analysis API used by Nutribob."""
+
 import os
 import requests
 from dotenv import load_dotenv
@@ -10,6 +12,7 @@ class NutritionAPIError(Exception):
     # No extra implementation needed; used for clearer error handling.
 
 def get_nutrition(query_text: str) -> dict:
+    """Call the external nutrition API and return the parsed JSON response."""
     url = os.getenv("FOOD_API_URL")
     key = os.getenv("FOOD_API_KEY")
 

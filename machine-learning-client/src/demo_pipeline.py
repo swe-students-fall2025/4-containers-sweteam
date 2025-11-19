@@ -1,3 +1,5 @@
+"""Demo script to run the Nutribob analysis pipeline."""
+
 import os
 from pipeline import analyze_drink_image
 

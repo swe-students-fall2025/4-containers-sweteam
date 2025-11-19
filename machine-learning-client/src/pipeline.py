@@ -1,3 +1,5 @@
+"""High-level pipeline to analyze a drink image and compute nutrition."""
+
 import os
 from dotenv import load_dotenv
 from classifier import classify_image
@@ -8,6 +10,7 @@ load_dotenv()
 
 
 def analyze_drink_image(image_path: str) -> dict:
+    """Analyze drink image."""
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 
