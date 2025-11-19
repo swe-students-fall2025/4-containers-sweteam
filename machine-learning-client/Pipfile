@@ -13,10 +13,10 @@ pillow = "*"
 pymongo = "*"
 typing-extensions = "*"
 packaging = "*"
-
-[dev-packages]
 pytest = "*"
 pytest-cov = "*"
+
+[dev-packages]
 pylint = "*"
 black = "*"
 tomli = "*"

@@ -95,9 +95,13 @@ def scan():
     """Handle image upload from the scan page and show results."""
     image_file1 = request.files.get("image1")
     image_file2 = request.files.get("image2")
-    image_file = image_file2 if image_file1.filename == "" else image_file1
+    # Prefer the second file if the first is empty, but guard against None.
+    if (not image_file1 or image_file1.filename == "") and image_file2:
+        image_file = image_file2
+    else:
+        image_file = image_file1
 
-    if not image_file1 and not image_file2:
+    if not image_file or image_file.filename == "":
         flash("Please select or scan a milk tea image first.")
         return redirect(url_for("index"))
 
