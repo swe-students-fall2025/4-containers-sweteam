@@ -12,6 +12,8 @@ pymongo = "*"
 python-dotenv = "*"
 authlib = "*"
 certifi = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [dev-packages]
 
