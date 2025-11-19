@@ -2,7 +2,15 @@
 
 These tests exercise key routes and the temporary fake nutrition model,
 ensuring authentication redirects and basic scan behavior work as expected.
+
+Pylint configuration notes
+--------------------------
+- too-few-public-methods is disabled globally in this test module
+    because we intentionally define tiny stub classes to stand in for
+    external services like MongoDB collections and OAuth clients.
 """
+
+# pylint: disable=too-few-public-methods
 
 import pytest
 
@@ -156,6 +164,8 @@ def test_history_renders_with_scans(client, monkeypatch):
     """/history should render a list of scans when DB returns results."""
 
     class FakeCursor:
+        """Minimal iterable cursor stub for Mongo history tests."""
+
         def __iter__(self):
             return iter(
                 [
@@ -168,6 +178,8 @@ def test_history_renders_with_scans(client, monkeypatch):
             )
 
     class FakeCollection:
+        """Minimal collection stub exposing find/sort/limit methods."""
+
         def find(self, _query):  # noqa: D401, ARG002
             """Return a fake Mongo cursor."""
             return self
@@ -181,6 +193,8 @@ def test_history_renders_with_scans(client, monkeypatch):
             return FakeCursor()
 
     class FakeDB:
+        """Container stub exposing a scans collection attribute."""
+
         scans = FakeCollection()
 
     monkeypatch.setattr("app.mongo_db", FakeDB(), raising=False)
@@ -201,12 +215,16 @@ def test_image_returns_404_when_scan_missing(client, monkeypatch):
     """/image/<id> should return 404 when the scan is not found."""
 
     class FakeScans:
+        """Collection stub whose find_one always returns no document."""
+
         def find_one(self, _query):  # noqa: D401, ARG002
             """Return no document to simulate missing scan."""
 
             return None
 
     class FakeDB:
+        """Container stub exposing scans with missing documents."""
+
         scans = FakeScans()
 
     monkeypatch.setattr("app.mongo_db", FakeDB(), raising=False)
@@ -219,17 +237,21 @@ def test_auth_callback_failure_redirects_to_login(monkeypatch):
     app.config["TESTING"] = True
 
     class FakeGoogleClient:
+        """Stub Google client that simulates failed OAuth token retrieval."""
+
         def authorize_access_token(self):  # noqa: D401
             """Simulate failed token acquisition by returning None."""
 
             return None
 
     class FakeOAuth:
+        """Stub OAuth container exposing a google client attribute."""
+
         google = FakeGoogleClient()
 
     monkeypatch.setattr("app.oauth", FakeOAuth(), raising=False)
 
     with app.test_client() as test_client:
         response = test_client.get("/auth/callback")
-        assert response.status_code == 200 or response.status_code == 302
+        assert response.status_code in {200, 302}
         assert "/login" in response.headers["Location"]
