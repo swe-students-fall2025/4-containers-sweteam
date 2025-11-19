@@ -42,6 +42,8 @@ ml_service_url = os.environ.get("ML_SERVICE_URL")
 if ml_service_url:
     ml_service_url = ml_service_url.rstrip("/")
 
+MAX_IMAGE_SIZE_BYTES = 16 * 1024 * 1024  # 16 MB upload limit
+
 if mongo_uri:
     try:
         mongo_client = MongoClient(
@@ -117,23 +119,21 @@ def scan():
         flash("Uploaded image is empty. Please try again.")
         return redirect(url_for("index"))
 
-    max_size_bytes = 16 * 1024 * 1024  # 16 MB
-    if len(image_bytes) > max_size_bytes:
+    if len(image_bytes) > MAX_IMAGE_SIZE_BYTES:
         flash("Image too large. Please upload an image under 16MB.")
         return redirect(url_for("index"))
 
     image_filename = image_file.filename or "scan.jpg"
     image_content_type = image_file.mimetype or "application/octet-stream"
 
-    default_nutrition = fake_nutrition_model(image_bytes)
-    nutrition = default_nutrition
+    nutrition = fake_nutrition_model(image_bytes)
     analysis_result: dict[str, Any] | None = None
     if ml_service_url:
         try:
             analysis_result = call_ml_service(
                 image_bytes, image_filename, image_content_type
             )
-            nutrition = merge_nutrition(default_nutrition, analysis_result)
+            nutrition = merge_nutrition(nutrition, analysis_result)
         except MLServiceError as exc:
             print(f"ML service request failed: {exc}")
             flash(
@@ -145,16 +145,16 @@ def scan():
     scan_doc_id = None
     if mongo_db is not None and user:
         try:
-            drink_name = (
-                (analysis_result or {}).get("label") if analysis_result else None
-            ) or "Milk tea"
             scan_doc = {
                 "user_id": user.get("id"),
                 "user_email": user.get("email"),
                 "image_filename": image_filename,
                 "image_content_type": image_content_type,
                 "image_data": Binary(image_bytes),
-                "drink_name": drink_name,
+                "drink_name": (
+                    (analysis_result or {}).get("label") if analysis_result else None
+                )
+                or "Milk tea",
                 "nutrition": nutrition,
                 "created_at": datetime.utcnow(),
             }
