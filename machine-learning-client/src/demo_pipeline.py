@@ -1,5 +1,3 @@
-"""Small demo script to run the Nutribob analysis pipeline on a sample image."""
-
 import os
 from pipeline import analyze_drink_image
 
@@ -10,7 +8,7 @@ TEST_IMAGE_PATH = os.path.join(
     "data",
     "train",
     "fruit_tea",
-    "DCREAM-CAT-02-FRUITTEA.jpg",
+    "intro-1688597638.jpg",
 )
 
 if __name__ == "__main__":
