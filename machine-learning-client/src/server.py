@@ -23,10 +23,9 @@ def _save_upload_to_temp(file_storage) -> str:
     filename = secure_filename(file_storage.filename or "upload.jpg")
     _, ext = os.path.splitext(filename)
 
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=ext or ".jpg")
-    file_storage.save(temp_file.name)
-    temp_file.close()
-    return temp_file.name
+    with tempfile.NamedTemporaryFile(delete=False, suffix=ext or ".jpg") as temp_file:
+        file_storage.save(temp_file.name)
+        return temp_file.name
 
 
 @app.route("/health", methods=["GET"])

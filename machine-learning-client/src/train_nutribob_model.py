@@ -1,6 +1,8 @@
+"""Training script for the NutriBob MobileNetV2 classification model."""
+
 import os
 import sys
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 import tensorflow as tf
 from tensorflow.keras import layers, models
@@ -18,7 +20,9 @@ SEED = 42
 
 AUTOTUNE = tf.data.AUTOTUNE
 
+
 def _check_data_dir() -> List[str]:
+    """Ensure the training data directory exists and contains class folders."""
     print(f"Looking for training data in: {DATA_DIR}")
 
     if not os.path.exists(DATA_DIR):
@@ -39,7 +43,9 @@ def _check_data_dir() -> List[str]:
     print("Found class folders:", subdirs)
     return subdirs
 
+
 def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
+    """Load and split the training data into train/validation datasets."""
     _check_data_dir()
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
@@ -70,9 +76,9 @@ def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
     print("Detected classes from dataset:", class_names)
 
     os.makedirs(MODELS_DIR, exist_ok=True)
-    with open(LABELS_PATH, "w", encoding="utf-8") as f:
+    with open(LABELS_PATH, "w", encoding="utf-8") as label_file:
         for name in class_names:
-            f.write(name + "\n")
+            label_file.write(name + "\n")
     print(f"Labels saved to {LABELS_PATH}")
 
     def prepare(ds, training: bool) -> tf.data.Dataset:
@@ -87,8 +93,9 @@ def load_datasets() -> Tuple[tf.data.Dataset, tf.data.Dataset, List[str]]:
 
 
 def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
-    counts = []
-    for idx, name in enumerate(class_names):
+    """Compute a weighting for each class to balance the training data."""
+    counts: List[int] = []
+    for _, name in enumerate(class_names):
         folder = os.path.join(DATA_DIR, name)
         num_files = len(
             [
@@ -114,7 +121,9 @@ def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
     print("Computed class weights:", class_weights)
     return class_weights
 
+
 def build_model(num_classes: int) -> tf.keras.Model:
+    """Construct and compile the MobileNetV2 transfer-learning model."""
     base_model = tf.keras.applications.MobileNetV2(
         input_shape=IMG_SIZE + (3,),
         include_top=False,
@@ -135,9 +144,7 @@ def build_model(num_classes: int) -> tf.keras.Model:
     inputs = layers.Input(shape=IMG_SIZE + (3,), name="image_input")
 
     x = data_augmentation(inputs)
-
     x = layers.Rescaling(1.0 / 255.0, name="rescale")(x)
-
     x = base_model(x, training=False)
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.Dropout(0.2)(x)
@@ -155,7 +162,9 @@ def build_model(num_classes: int) -> tf.keras.Model:
     model.summary()
     return model
 
+
 def main() -> None:
+    """Entry point that orchestrates dataset loading, training, and saving."""
     print("=== Loading datasets ===")
     train_ds, val_ds, class_names = load_datasets()
     num_classes = len(class_names)
@@ -176,7 +185,7 @@ def main() -> None:
 
     final_acc = history.history.get("accuracy", ["N/A"])[-1]
     final_val_acc = history.history.get("val_accuracy", ["N/A"])[-1]
-    print(f"\nTraining finished.")
+    print("\nTraining finished.")
     print(f"Final training accuracy: {final_acc}")
     print(f"Final validation accuracy: {final_val_acc}")
 

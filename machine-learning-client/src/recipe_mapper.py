@@ -1,3 +1,5 @@
+"""Map model labels to recipe text used for nutrition API queries."""
+
 DRINK_RECIPES = {
     "classic_milk_tea": "black tea, whole milk, sugar syrup, tapioca pearls",
     "taro_milk_tea": "taro powder, whole milk, sugar syrup, tapioca pearls",
@@ -9,4 +11,5 @@ DRINK_RECIPES = {
 
 
 def get_recipe_for_label(label: str) -> str:
+    """Return a recipe description string for the provided classification label."""
     return DRINK_RECIPES.get(label, DRINK_RECIPES["unknown"])

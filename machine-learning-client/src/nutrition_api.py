@@ -1,3 +1,5 @@
+"""Wrapper utilities for calling the external nutrition API service."""
+
 import os
 import requests
 from dotenv import load_dotenv
@@ -10,6 +12,7 @@ class NutritionAPIError(Exception):
     # No extra implementation needed; used for clearer error handling.
 
 def get_nutrition(query_text: str) -> dict:
+    """Call the configured nutrition API with the provided query text."""
     url = os.getenv("FOOD_API_URL")
     key = os.getenv("FOOD_API_KEY")
 
