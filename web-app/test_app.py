@@ -223,11 +223,13 @@ def test_call_ml_service_success(monkeypatch):
             self.text = "ok"
 
         def json(self):
+            """Return the stored payload."""
             return self._payload
 
     captured = {}
 
-    def fake_post(url, files, timeout):  # noqa: ARG001
+    def fake_post(url, files, _timeout=None, **_kwargs):  # noqa: D401
+        """Simulate a successful POST call to the ML service."""
         captured["url"] = url
         captured["files"] = files
         return DummyResponse({"success": True, "label": "milk-tea"})
@@ -246,14 +248,18 @@ def test_call_ml_service_raises_on_http_error(monkeypatch):
     """call_ml_service should raise MLServiceError on HTTP 400+ responses."""
 
     class DummyResponse:
+        """Minimal stub representing a failing HTTP response."""
+
         status_code = 500
         text = "boom"
 
         @staticmethod
         def json():
+            """Return an error payload."""
             return {"error": "boom"}
 
     def fake_post(*_args, **_kwargs):
+        """Simulate requests.post returning a 500 response."""
         return DummyResponse()
 
     monkeypatch.setattr("app.ml_service_url", "http://ml-service")
@@ -267,13 +273,17 @@ def test_call_ml_service_invalid_json(monkeypatch):
     """Invalid JSON responses should raise MLServiceError."""
 
     class DummyResponse:
+        """Stub response that raises while parsing JSON."""
+
         status_code = 200
 
         @staticmethod
         def json():
+            """Always raise to simulate invalid JSON."""
             raise ValueError("bad json")
 
     def fake_post(*_args, **_kwargs):
+        """Simulate requests.post returning invalid JSON."""
         return DummyResponse()
 
     monkeypatch.setattr("app.ml_service_url", "http://ml-service")
