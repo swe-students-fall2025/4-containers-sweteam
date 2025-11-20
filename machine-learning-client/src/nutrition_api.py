@@ -9,7 +9,9 @@ load_dotenv()
 
 class NutritionAPIError(Exception):
     """Custom exception type for nutrition API failures."""
+
     # No extra implementation needed; used for clearer error handling.
+
 
 def get_nutrition(query_text: str) -> dict:
     """Call the configured nutrition API with the provided query text."""

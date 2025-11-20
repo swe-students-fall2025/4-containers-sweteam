@@ -13,6 +13,7 @@ TEST_IMAGE_PATH = os.path.join(
     "intro-1688597638.jpg",
 )
 
+
 def main() -> None:
     """Run analyze_drink_image on a sample image and print the results."""
     result = analyze_drink_image(TEST_IMAGE_PATH)

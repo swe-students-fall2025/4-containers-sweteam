@@ -30,9 +30,7 @@ def _check_data_dir() -> List[str]:
         sys.exit(1)
 
     subdirs = [
-        d
-        for d in os.listdir(DATA_DIR)
-        if os.path.isdir(os.path.join(DATA_DIR, d))
+        d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))
     ]
     subdirs.sort()
 
@@ -98,11 +96,7 @@ def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
     for _, name in enumerate(class_names):
         folder = os.path.join(DATA_DIR, name)
         num_files = len(
-            [
-                f
-                for f in os.listdir(folder)
-                if os.path.isfile(os.path.join(folder, f))
-            ]
+            [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
         )
         print(f"Class '{name}' has {num_files} images.")
         if num_files == 0:
@@ -114,9 +108,7 @@ def compute_class_weights(class_names: List[str]) -> Dict[int, float]:
 
     total = sum(counts)
     num_classes = len(class_names)
-    class_weights = {
-        i: total / (num_classes * count) for i, count in enumerate(counts)
-    }
+    class_weights = {i: total / (num_classes * count) for i, count in enumerate(counts)}
 
     print("Computed class weights:", class_weights)
     return class_weights

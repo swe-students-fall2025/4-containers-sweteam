@@ -43,9 +43,7 @@ def test_successful_analysis_builds_summary(monkeypatch, tmp_path):
         }
 
     monkeypatch.setattr("src.pipeline.classify_image", fake_classify_image)
-    monkeypatch.setattr(
-        "src.pipeline.get_recipe_for_label", fake_get_recipe_for_label
-    )
+    monkeypatch.setattr("src.pipeline.get_recipe_for_label", fake_get_recipe_for_label)
     monkeypatch.setattr("src.pipeline.get_nutrition", fake_get_nutrition)
 
     result = analyze_drink_image(str(img_path))
@@ -79,9 +77,7 @@ def test_nutrition_api_error_returns_failure(monkeypatch, tmp_path):
         raise NutritionAPIError("API quota exceeded")
 
     monkeypatch.setattr("src.pipeline.classify_image", fake_classify_image)
-    monkeypatch.setattr(
-        "src.pipeline.get_recipe_for_label", fake_get_recipe_for_label
-    )
+    monkeypatch.setattr("src.pipeline.get_recipe_for_label", fake_get_recipe_for_label)
     monkeypatch.setattr("src.pipeline.get_nutrition", fake_get_nutrition)
 
     result = analyze_drink_image(str(img_path))

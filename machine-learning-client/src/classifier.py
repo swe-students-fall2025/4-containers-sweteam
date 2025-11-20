@@ -48,12 +48,16 @@ def _ensure_model_loaded() -> None:
 
     if load_model is None or np is None or Image is None:
         print("[classifier] TensorFlow stack not available; using stub mode.")
-        _STATE.update({"model": None, "labels": _load_labels(), "model_available": False})
+        _STATE.update(
+            {"model": None, "labels": _load_labels(), "model_available": False}
+        )
         return
 
     if not MODEL_PATH.exists():
         print(f"[classifier] Model file not found at {MODEL_PATH}; using stub.")
-        _STATE.update({"model": None, "labels": _load_labels(), "model_available": False})
+        _STATE.update(
+            {"model": None, "labels": _load_labels(), "model_available": False}
+        )
         return
 
     print(f"[classifier] Loading model from {MODEL_PATH} ...")
