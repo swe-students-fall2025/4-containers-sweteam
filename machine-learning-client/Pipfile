@@ -15,6 +15,7 @@ typing-extensions = "*"
 packaging = "*"
 pytest = "*"
 pytest-cov = "*"
+flask = "*"
 
 [dev-packages]
 pylint = "*"

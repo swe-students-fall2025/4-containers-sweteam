@@ -14,7 +14,13 @@ Pylint configuration notes
 
 import pytest
 
-from app import app, fake_nutrition_model
+from app import (
+    MLServiceError,
+    app,
+    call_ml_service,
+    fake_nutrition_model,
+    merge_nutrition,
+)
 
 
 @pytest.fixture(name="client")
@@ -25,6 +31,7 @@ def fixture_client(monkeypatch, tmp_path):
     # Disable real Mongo and OAuth during tests
     monkeypatch.setattr("app.mongo_db", None, raising=False)
     monkeypatch.setattr("app.oauth", type("_O", (), {"google": None})(), raising=False)
+    monkeypatch.setattr("app.ml_service_url", None, raising=False)
 
     # Use a temporary uploads directory
     uploads_dir = tmp_path / "uploads"
@@ -85,7 +92,7 @@ def test_scan_with_file_uses_fake_model(client, monkeypatch, tmp_path):
     dummy_image_path = tmp_path / "test.jpg"
     dummy_image_path.write_bytes(b"fake image bytes")
 
-    def fake_model(_path):
+    def fake_model(_bytes):
         return {"calories": 123, "sugar_grams": 10, "fat_grams": 2}
 
     monkeypatch.setattr("app.fake_nutrition_model", fake_model)
@@ -100,7 +107,7 @@ def test_scan_with_file_uses_fake_model(client, monkeypatch, tmp_path):
 
 def test_fake_nutrition_model_returns_expected_keys():
     """fake_nutrition_model should return calorie, sugar, and fat keys."""
-    result = fake_nutrition_model("/does/not/matter.jpg")
+    result = fake_nutrition_model(b"test-bytes")
     assert set(result.keys()) == {"calories", "sugar_grams", "fat_grams"}
 
 
@@ -140,7 +147,7 @@ def test_result_route_delegates_to_scan(client, monkeypatch, tmp_path):
     dummy_image_path = tmp_path / "legacy.jpg"
     dummy_image_path.write_bytes(b"fake image bytes")
 
-    def fake_model(_path):
+    def fake_model(_bytes):
         return {"calories": 50, "sugar_grams": 5, "fat_grams": 1}
 
     monkeypatch.setattr("app.fake_nutrition_model", fake_model)
@@ -202,6 +209,123 @@ def test_history_renders_with_scans(client, monkeypatch):
     response = client.get("/history")
     assert response.status_code == 200
     assert b"Milk tea" in response.data
+
+
+def test_call_ml_service_success(monkeypatch):
+    """call_ml_service should return parsed JSON when the API succeeds."""
+
+    class DummyResponse:
+        """Simple stand-in for requests.Response."""
+
+        def __init__(self, payload, status_code=200):
+            self._payload = payload
+            self.status_code = status_code
+            self.text = "ok"
+
+        def json(self):
+            """Return the stored payload."""
+            return self._payload
+
+    captured = {}
+
+    def fake_post(url, files, _timeout=None, **_kwargs):  # noqa: D401
+        """Simulate a successful POST call to the ML service."""
+        captured["url"] = url
+        captured["files"] = files
+        return DummyResponse({"success": True, "label": "milk-tea"})
+
+    monkeypatch.setattr("app.ml_service_url", "http://ml-service")
+    monkeypatch.setattr("app.requests.post", fake_post)
+
+    result = call_ml_service(b"img", "scan.jpg", "image/jpeg")
+
+    assert result["success"] is True
+    assert captured["url"] == "http://ml-service/analyze"
+    assert "image" in captured["files"]
+
+
+def test_call_ml_service_raises_on_http_error(monkeypatch):
+    """call_ml_service should raise MLServiceError on HTTP 400+ responses."""
+
+    class DummyResponse:
+        """Minimal stub representing a failing HTTP response."""
+
+        status_code = 500
+        text = "boom"
+
+        @staticmethod
+        def json():
+            """Return an error payload."""
+            return {"error": "boom"}
+
+    def fake_post(*_args, **_kwargs):
+        """Simulate requests.post returning a 500 response."""
+        return DummyResponse()
+
+    monkeypatch.setattr("app.ml_service_url", "http://ml-service")
+    monkeypatch.setattr("app.requests.post", fake_post)
+
+    with pytest.raises(MLServiceError):
+        call_ml_service(b"img", "scan.jpg", "image/jpeg")
+
+
+def test_call_ml_service_invalid_json(monkeypatch):
+    """Invalid JSON responses should raise MLServiceError."""
+
+    class DummyResponse:
+        """Stub response that raises while parsing JSON."""
+
+        status_code = 200
+
+        @staticmethod
+        def json():
+            """Always raise to simulate invalid JSON."""
+            raise ValueError("bad json")
+
+    def fake_post(*_args, **_kwargs):
+        """Simulate requests.post returning invalid JSON."""
+        return DummyResponse()
+
+    monkeypatch.setattr("app.ml_service_url", "http://ml-service")
+    monkeypatch.setattr("app.requests.post", fake_post)
+
+    with pytest.raises(MLServiceError):
+        call_ml_service(b"img", "scan.jpg", "image/jpeg")
+
+
+def test_merge_nutrition_updates_summary_values():
+    """merge_nutrition should override fallback values when summary is present."""
+    fallback = {"calories": 100, "sugar_grams": 5, "fat_grams": 2}
+    analysis_result = {
+        "success": True,
+        "summary": {"total_calories": 250},
+        "nutrition_raw": {
+            "items": [
+                {"sugar_g": 10, "fat_total_g": 3.3},
+                {"sugar_g": 5, "fat_total_g": 1.1},
+            ]
+        },
+    }
+
+    merged = merge_nutrition(fallback, analysis_result)
+
+    assert merged["calories"] == 250
+    assert merged["sugar_grams"] == 15.0
+    assert merged["fat_grams"] == 4.4
+
+
+def test_merge_nutrition_handles_invalid_payloads():
+    """merge_nutrition should ignore malformed structures gracefully."""
+    fallback = {"calories": 100, "sugar_grams": 5, "fat_grams": 2}
+    analysis_result = {
+        "success": True,
+        "summary": "not-a-dict",
+        "nutrition_raw": {"items": "not-a-list"},
+    }
+
+    merged = merge_nutrition(fallback, analysis_result)
+
+    assert merged == fallback
 
 
 def test_image_returns_503_when_db_unavailable(client, monkeypatch):

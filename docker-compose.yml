@@ -17,10 +17,13 @@ services:
   ml-client:
     container_name: ml-client
     build: ./machine-learning-client
+    ports:
+      - "8000:8000"
     environment:
       FOOD_API_URL: ${FOOD_API_URL}
       FOOD_API_KEY: ${FOOD_API_KEY}
       MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASS}@db:27017/${MONGO_DB_NAME}?authSource=admin
+      ML_SERVICE_PORT: 8000
     depends_on:
       - db
 
@@ -31,8 +34,10 @@ services:
       - "5000:5000"
     environment:
       MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASS}@db:27017/${MONGO_DB_NAME}?authSource=admin
+      ML_SERVICE_URL: http://ml-client:8000
     depends_on:
       - db
+      - ml-client
 
 volumes:
   mongo-data:

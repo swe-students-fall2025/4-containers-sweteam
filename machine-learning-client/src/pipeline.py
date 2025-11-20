@@ -1,13 +1,16 @@
+"""End-to-end image analysis pipeline combining classification and nutrition."""
+
 import os
 from dotenv import load_dotenv
-from classifier import classify_image
-from recipe_mapper import get_recipe_for_label
-from nutrition_api import get_nutrition, NutritionAPIError
+from .classifier import classify_image
+from .recipe_mapper import get_recipe_for_label
+from .nutrition_api import get_nutrition, NutritionAPIError
 
 load_dotenv()
 
 
 def analyze_drink_image(image_path: str) -> dict:
+    """Run the full pipeline and return label, recipe, and nutrition data."""
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
 
