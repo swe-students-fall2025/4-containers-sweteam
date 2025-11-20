@@ -159,7 +159,7 @@ The ML client uses a third-party API to fetch calorie and nutrition estimates fo
 | `FOOD_API_URL` | Nutrition API endpoint     | `https://api.calorieninjas.com/v1/nutrition` |
 | `FOOD_API_KEY` | API key for authentication | `YOUR_API_KEY_HERE`                          |
 
-You **must** replace the API key with a real one that you get from `https://api.calorieninjas.com/v1/nutrition` for nutrition lookup to work.
+You **must** replace the API key with a real one that you get from `[api.calorieninjas.com](https://calorieninjas.com/api)` for nutrition lookup to work.
 
 ### **Flask Web App Settings**
 
