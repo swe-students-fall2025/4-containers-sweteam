@@ -11,7 +11,7 @@ import tempfile
 from typing import Any
 
 from flask import Flask, jsonify, request
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename  # pylint: disable=import-error
 
 from .pipeline import analyze_drink_image
 
