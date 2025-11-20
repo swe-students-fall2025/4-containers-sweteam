@@ -89,7 +89,6 @@ The whole system runs in Docker using three main services:
 ```
 
 ## Quick Start
-The easiest way to run the entire system (web app + ML client + MongoDB) on any platform is with Docker Compose.
 
 ### 1. Clone the repository
 ```bash
@@ -113,11 +112,9 @@ docker compose up --build
 
 Docker Compose will:
 
-Start MongoDB (db)
-
-Build and start the machine-learning client (ml-client)
-
-Build and start the Flask web app (web-app)
+- Start MongoDB (db)
+- Build and start the machine-learning client (ml-client)
+- Build and start the Flask web app (web-app)
 
 ### 4. Use the application
 Open: `http://localhost:5000`
@@ -162,7 +159,7 @@ The ML client uses a third-party API to fetch calorie and nutrition estimates fo
 | `FOOD_API_URL` | Nutrition API endpoint     | `https://api.calorieninjas.com/v1/nutrition` |
 | `FOOD_API_KEY` | API key for authentication | `YOUR_API_KEY_HERE`                          |
 
-> You **must** replace the API key with a real one that you get from `https://api.calorieninjas.com/v1/nutrition` for nutrition lookup to work.
+You **must** replace the API key with a real one that you get from `https://api.calorieninjas.com/v1/nutrition` for nutrition lookup to work.
 
 ### **Flask Web App Settings**
 
@@ -183,9 +180,6 @@ The web app communicates with the ML client through these variables.
 | ----------------- | ---------------------------- | ----------------------- |
 | `ML_SERVICE_URL`  | URL of the ML client service | `http://ml-client:8000` |
 | `ML_SERVICE_PORT` | ML service port              | `8000`                  |
-
-> **Important:**
-> When running with Docker Compose, the ML service must be accessed using the service name (`ml-client`), *not* `localhost`.
 
 ### **`.env.example`**
 Create a `.env` file in the project root:
