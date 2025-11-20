@@ -1,22 +1,11 @@
-"""
-Tests for analyze_drink_image() defined in src/pipeline.py
-"""
+"""Tests for analyze_drink_image() defined in src/pipeline.py."""
 
 import os
-import sys
-from pathlib import Path
 
 import pytest
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-SRC_DIR = ROOT_DIR / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from pipeline import analyze_drink_image  # pylint: disable=wrong-import-position,import-error
-from nutrition_api import (  # pylint: disable=wrong-import-position,import-error
-    NutritionAPIError,
-)
+from src.pipeline import analyze_drink_image
+from src.nutrition_api import NutritionAPIError
 
 
 def test_missing_image_raises_file_not_found(tmp_path):
@@ -53,9 +42,11 @@ def test_successful_analysis_builds_summary(monkeypatch, tmp_path):
             ]
         }
 
-    monkeypatch.setattr("pipeline.classify_image", fake_classify_image)
-    monkeypatch.setattr("pipeline.get_recipe_for_label", fake_get_recipe_for_label)
-    monkeypatch.setattr("pipeline.get_nutrition", fake_get_nutrition)
+    monkeypatch.setattr("src.pipeline.classify_image", fake_classify_image)
+    monkeypatch.setattr(
+        "src.pipeline.get_recipe_for_label", fake_get_recipe_for_label
+    )
+    monkeypatch.setattr("src.pipeline.get_nutrition", fake_get_nutrition)
 
     result = analyze_drink_image(str(img_path))
 
@@ -87,9 +78,11 @@ def test_nutrition_api_error_returns_failure(monkeypatch, tmp_path):
         """Simulate an API failure."""
         raise NutritionAPIError("API quota exceeded")
 
-    monkeypatch.setattr("pipeline.classify_image", fake_classify_image)
-    monkeypatch.setattr("pipeline.get_recipe_for_label", fake_get_recipe_for_label)
-    monkeypatch.setattr("pipeline.get_nutrition", fake_get_nutrition)
+    monkeypatch.setattr("src.pipeline.classify_image", fake_classify_image)
+    monkeypatch.setattr(
+        "src.pipeline.get_recipe_for_label", fake_get_recipe_for_label
+    )
+    monkeypatch.setattr("src.pipeline.get_nutrition", fake_get_nutrition)
 
     result = analyze_drink_image(str(img_path))
 

@@ -2,9 +2,9 @@
 
 import os
 from dotenv import load_dotenv
-from classifier import classify_image
-from recipe_mapper import get_recipe_for_label
-from nutrition_api import get_nutrition, NutritionAPIError
+from .classifier import classify_image
+from .recipe_mapper import get_recipe_for_label
+from .nutrition_api import get_nutrition, NutritionAPIError
 
 load_dotenv()
 

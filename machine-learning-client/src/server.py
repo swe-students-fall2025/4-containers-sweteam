@@ -13,7 +13,7 @@ from typing import Any
 from flask import Flask, jsonify, request
 from werkzeug.utils import secure_filename
 
-from pipeline import analyze_drink_image
+from .pipeline import analyze_drink_image
 
 app = Flask(__name__)
 

@@ -1,7 +1,7 @@
 """Simple executable demo that runs the pipeline on a sample image."""
 
 import os
-from pipeline import analyze_drink_image
+from .pipeline import analyze_drink_image
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
