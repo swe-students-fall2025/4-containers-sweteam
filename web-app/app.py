@@ -55,7 +55,7 @@ if mongo_uri:
         mongo_client = MongoClient(
             mongo_uri,
             serverSelectionTimeoutMS=5000,
-            tlsCAFile=certifi.where(),
+            # tlsCAFile=certifi.where(),
         )
         mongo_db = mongo_client["nutribob"]
         print("Connected to MongoDB successfully.")
