@@ -10,7 +10,6 @@ from datetime import datetime
 from functools import wraps
 from typing import Any
 from pathlib import Path
-import certifi
 import requests
 
 from authlib.integrations.flask_client import OAuth
