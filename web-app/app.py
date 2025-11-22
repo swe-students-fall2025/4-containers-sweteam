@@ -9,7 +9,7 @@ import io
 from datetime import datetime
 from functools import wraps
 from typing import Any
-import certifi
+from pathlib import Path
 import requests
 
 from authlib.integrations.flask_client import OAuth
@@ -29,7 +29,12 @@ from pymongo.mongo_client import MongoClient
 from bson.binary import Binary
 from bson import ObjectId
 
-load_dotenv()
+# Load env vars from the nearest .env (allows using the root-level .env)
+# Load root-level .env first, then allow a local web-app/.env to override if present.
+_app_dir = Path(__file__).resolve().parent
+_root_env = _app_dir.parent / ".env"
+load_dotenv(_root_env)
+load_dotenv(_app_dir / ".env", override=True)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-me-later")
@@ -49,7 +54,7 @@ if mongo_uri:
         mongo_client = MongoClient(
             mongo_uri,
             serverSelectionTimeoutMS=5000,
-            tlsCAFile=certifi.where(),
+            # tlsCAFile=certifi.where(),
         )
         mongo_db = mongo_client["nutribob"]
         print("Connected to MongoDB successfully.")

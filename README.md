@@ -148,6 +148,13 @@ These variables control access to the MongoDB instance inside Docker.
 | `MONGO_PASS`    | MongoDB root password                          | `password`                                                         |
 | `MONGO_URI`     | Full MongoDB connection URI                    | `mongodb://sweteam:password@db:27017/nutribob_db?authSource=admin` |
 
+
+### **Google Auth Secrets**
+
+| Variable | Description | Example |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Real Google Cloud OAuth client credentials. | `12345.apps.googleusercontent.com` / `your_google_client_secret` |
+
+
 ### **Nutrition API**
 
 The ML client uses a third-party API to fetch calorie and nutrition estimates for each drink.
@@ -163,12 +170,12 @@ You **must** replace the API key with a real one that you get from [api.calorien
 
 These variables configure the behavior of the Flask web application.
 
-| Variable       | Description                 | Example                   |
-| -------------- | --------------------------- | ------------------------- |
-| `FLASK_ENV`    | Flask environment mode      | `development`             |
-| `FLASK_DEBUG`  | Enable debug mode (1 = on)  | `1`                       |
-| `SECRET_KEY`   | Secret key for sessions     | `replace_with_secure_key` |
-| `WEB_APP_PORT` | Port exposed by the web app | `5000`                    |
+| Variable           | Description                 | Example                   |
+| ------------------ | --------------------------- | ------------------------- |
+| `FLASK_ENV`        | Flask environment mode      | `development`             |
+| `FLASK_DEBUG`      | Enable debug mode (1 = on)  | `1`                       |
+| `SECRET_KEY`       | Secret key for sessions     | `replace_with_secure_key` |
+| `WEB_APP_PORT`     | Port exposed by the web app | `5000`                    |
 
 ### **Machine Learning Client**
 
@@ -190,17 +197,24 @@ MONGO_PORT=27017
 MONGO_USER=sweteam
 MONGO_PASS=password
 
-MONGO_URI=mongodb://sweteam:password@db:27017/nutribob_db?authSource=admin
+MONGO_URI=mongodb://sweteam:change_me@db:27017/nutribob_db?authSource=admin
+MONGODB_URI=mongodb+srv://user:change_me@cluster.example.mongodb.net/?appName=nutribob
+MONGODB_DB=nutribob
 
 FOOD_API_URL=https://api.calorieninjas.com/v1/nutrition
-FOOD_API_KEY=your_api_key
+FOOD_API_KEY=your_food_api_key
 
+FLASK_APP=app.py
 FLASK_ENV=development
 FLASK_DEBUG=1
 SECRET_KEY=replace_with_secure_key
+FLASK_SECRET_KEY=replace_with_flask_secret_key
+
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 WEB_APP_PORT=5000
 
-ML_SERVICE_URL=http://ml-client:8000
+ML_SERVICE_URL=http://localhost:8000
 ML_SERVICE_PORT=8000
 ```
