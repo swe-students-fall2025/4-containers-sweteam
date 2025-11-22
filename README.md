@@ -27,6 +27,8 @@ The whole system runs in Docker using three main services:
 - `ml-client`: Python machine learning client that loads a Keras/TensorFlow model
 - `db`: MongoDB database used to persist analysis results and any related data
 
+Uploaded images are not kept on disk; the web app stores image bytes and scan results directly in MongoDB (plus a short-lived temp file in the ML client while processing).
+
 ## Repository Structure
 
 ```text
@@ -64,10 +66,6 @@ The whole system runs in Docker using three main services:
 
 │   ├── static/
 │   │   ├── style.css
-│   │   └── uploads/                 # Uploaded images from local runs
-│   │       ├── 273465029009.JPEG
-│   │       ├── WechatIMG64.jpg
-│   │       └── image.jpg
 
 │   ├── templates/                   # HTML templates
 │   │   ├── history.html
