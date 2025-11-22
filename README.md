@@ -115,7 +115,7 @@ Docker Compose will:
 - Build and start the Flask web app (web-app)
 
 ### 4. Use the application
-Open: `http://localhost:5000`
+Open: `http://localhost:5001`
 
 From there you can:
 
@@ -175,7 +175,7 @@ These variables configure the behavior of the Flask web application.
 | `FLASK_ENV`        | Flask environment mode      | `development`             |
 | `FLASK_DEBUG`      | Enable debug mode (1 = on)  | `1`                       |
 | `SECRET_KEY`       | Secret key for sessions     | `replace_with_secure_key` |
-| `WEB_APP_PORT`     | Port exposed by the web app | `5000`                    |
+| `WEB_APP_PORT`     | Port exposed by the web app | `5001`                    |
 
 ### **Machine Learning Client**
 
@@ -213,7 +213,7 @@ FLASK_SECRET_KEY=replace_with_flask_secret_key
 GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-WEB_APP_PORT=5000
+WEB_APP_PORT=5001
 
 ML_SERVICE_URL=http://localhost:8000
 ML_SERVICE_PORT=8000
