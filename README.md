@@ -17,7 +17,7 @@ Nutribob is a small containerized web application that helps users analyze **bub
 
 - [Natalie Han](https://github.com/nateisnataliehan)
 - [Jack Chen](https://github.com/a247686991)
-- [Jason Li](https://github.com/jsl1114)
+- [Jason Liu](https://github.com/jsl1114)
 
 ## Architecture
 
